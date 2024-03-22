@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 2
+names: ['-', 'box']
+
+roboflow:
+  workspace: ai-project-yolo
+  project: box-detection-rdssl
+  version: 10
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/ai-project-yolo/box-detection-rdssl/dataset/10

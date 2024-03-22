@@ -18,6 +18,7 @@ def load_model(model_path):
         A YOLO object detection model.
     """
     model = YOLO(model_path)
+    model = model.train(data='datasets/data.yaml', epochs=100, imgsz=640)
     return model
 
 
