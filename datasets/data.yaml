@@ -1,4 +1,4 @@
-path: . 
+path: D:/yolov8-streamlit-detection-tracking/datasets 
 train: 
   - coco/train2017.txt  # Correctly relative to 'datasets'
   - train/images        # Correctly relative to 'datasets'
