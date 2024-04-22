@@ -19,7 +19,7 @@ def train():
     #        break
     #    parameter.requires_grad = False
 
-    model.train(data='datasets/data.yaml', epochs=100, imgsz=640, resume=True)
+    model.train(data='datasets/data.yaml', epochs=100, imgsz=640)
     
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ import PIL
 
 # External packages
 import streamlit as st
-
+import cv2
 # Local Modules
 import settings
 import helper
@@ -33,12 +33,14 @@ confidence = float(st.sidebar.slider(
 # Selecting Detection Or Segmentation
 if model_type == 'Detection':
     model_path = Path(settings.DETECTION_MODEL)
+    model_path2 = Path(settings.BEST_MODEL)
 elif model_type == 'Segmentation':
     model_path = Path(settings.SEGMENTATION_MODEL)
 
 # Load Pre-trained ML Model
 try:
-    model = helper.load_model(model_path)
+    model, model2 = helper.load_model(model_path, model_path2)
+    
 except Exception as ex:
     st.error(f"Unable to load model. Check the specified path: {model_path}")
     st.error(ex)
@@ -82,10 +84,20 @@ if source_radio == settings.IMAGE:
                 res = model.predict(uploaded_image,
                                     conf=confidence
                                     )
+                res2 = model2.predict(uploaded_image, conf=confidence)
                 boxes = res[0].boxes
-                res_plotted = res[0].plot()[:, :, ::-1]
-                st.image(res_plotted, caption='Detected Image',
-                         use_column_width=True)
+                res_plotted = res[0].plot()
+                
+                res_plotted2 = res2[0].plot()
+                
+                
+                combined_image = cv2.addWeighted(res_plotted, 0.5, res_plotted2, 0.5, 0)
+
+                # Display the combined result
+                st.image(combined_image,
+                    caption='Combined Detections',
+                    channels="BGR",
+                    use_column_width=True)
                 try:
                     with st.expander("Detection Results"):
                         for box in boxes:
@@ -95,16 +107,16 @@ if source_radio == settings.IMAGE:
                     st.write("No image is uploaded yet!")
 
 elif source_radio == settings.VIDEO:
-    helper.play_stored_video(confidence, model)
+    helper.play_stored_video(confidence, model, model2)
 
 elif source_radio == settings.WEBCAM:
-    helper.play_webcam(confidence, model)
+    helper.play_webcam(confidence, model, model2)
 
 elif source_radio == settings.RTSP:
-    helper.play_rtsp_stream(confidence, model)
+    helper.play_rtsp_stream(confidence, model, model2)
 
 elif source_radio == settings.YOUTUBE:
-    helper.play_youtube_video(confidence, model)
+    helper.play_youtube_video(confidence, model, model2)
 
 else:
     st.error("Please select a valid source type!")

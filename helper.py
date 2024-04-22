@@ -7,7 +7,7 @@ from pytube import YouTube
 import settings
 
 
-def load_model(model_path):
+def load_model(model_path1, model_path2):
     """
     Loads a YOLO object detection model from the specified model_path.
 
@@ -17,9 +17,10 @@ def load_model(model_path):
     Returns:
         A YOLO object detection model.
     """
-    model = YOLO(model_path)
+    model1 = YOLO(model_path1)
+    model2 = YOLO(model_path2)
     
-    return model
+    return model1, model2
 
 
 def display_tracker_options():
@@ -31,7 +32,7 @@ def display_tracker_options():
     return is_display_tracker, None
 
 
-def _display_detected_frames(conf, model, st_frame, image, is_display_tracking=None, tracker=None):
+def _display_detected_frames(conf, model1, model2, st_frame, image, is_display_tracking=None, tracker=None):
     """
     Display the detected objects on a video frame using the YOLOv8 model.
 
@@ -51,21 +52,29 @@ def _display_detected_frames(conf, model, st_frame, image, is_display_tracking=N
 
     # Display object tracking, if specified
     if is_display_tracking:
-        res = model.track(image, conf=conf, persist=True, tracker=tracker)
+        res = model1.track(image, conf=conf, persist=True, tracker=tracker)
+        res2 = model2.track(image, conf=conf, persist=True, tracker=tracker)
     else:
         # Predict the objects in the image using the YOLOv8 model
-        res = model.predict(image, conf=conf)
+        res = model1.predict(image, conf=conf)
+        res2 = model2.predict(image, conf=conf)
+        
+    # Plot the detected objects from the first model
+    res_plotted1 = res[0].plot()
+    # Plot the detected objects from the second model
+    res_plotted2 = res2[0].plot()
+    
+    
+    combined_image = cv2.addWeighted(res_plotted1, 0.5, res_plotted2, 0.5, 0)
 
-    # # Plot the detected objects on the video frame
-    res_plotted = res[0].plot()
-    st_frame.image(res_plotted,
-                   caption='Detected Video',
-                   channels="BGR",
-                   use_column_width=True
-                   )
+    # Display the combined result
+    st_frame.image(combined_image,
+         caption='Combined Detections',
+         channels="BGR",
+         use_column_width=True)
 
 
-def play_youtube_video(conf, model):
+def play_youtube_video(conf, model, model2):
     """
     Plays a webcam stream. Detects Objects in real-time using the YOLOv8 object detection model.
 
@@ -95,6 +104,7 @@ def play_youtube_video(conf, model):
                 if success:
                     _display_detected_frames(conf,
                                              model,
+                                             model2,
                                              st_frame,
                                              image,
                                              is_display_tracker,
@@ -107,7 +117,7 @@ def play_youtube_video(conf, model):
             st.sidebar.error("Error loading video: " + str(e))
 
 
-def play_rtsp_stream(conf, model):
+def play_rtsp_stream(conf, model, model2):
     """
     Plays an rtsp stream. Detects Objects in real-time using the YOLOv8 object detection model.
 
@@ -133,6 +143,7 @@ def play_rtsp_stream(conf, model):
                 if success:
                     _display_detected_frames(conf,
                                              model,
+                                             model2,
                                              st_frame,
                                              image,
                                              is_display_tracker,
@@ -149,7 +160,7 @@ def play_rtsp_stream(conf, model):
             st.sidebar.error("Error loading RTSP stream: " + str(e))
 
 
-def play_webcam(conf, model):
+def play_webcam(conf, model, model2):
     """
     Plays a webcam stream. Detects Objects in real-time using the YOLOv8 object detection model.
 
@@ -174,6 +185,7 @@ def play_webcam(conf, model):
                 if success:
                     _display_detected_frames(conf,
                                              model,
+                                             model2,
                                              st_frame,
                                              image,
                                              is_display_tracker,
@@ -186,7 +198,7 @@ def play_webcam(conf, model):
             st.sidebar.error("Error loading video: " + str(e))
 
 
-def play_stored_video(conf, model):
+def play_stored_video(conf, model, model2):
     """
     Plays a stored video file. Tracks and detects objects in real-time using the YOLOv8 object detection model.
 
@@ -220,6 +232,7 @@ def play_stored_video(conf, model):
                 if success:
                     _display_detected_frames(conf,
                                              model,
+                                             model2,
                                              st_frame,
                                              image,
                                              is_display_tracker,
